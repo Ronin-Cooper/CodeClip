@@ -122,10 +122,17 @@ class SettingsManager: ObservableObject {
 
     // MARK: - Change Notification
 
+    private var notifyPending = false
+
     /// 延迟发送 objectWillChange 通知到下一个 RunLoop 周期
-    /// 避免在 SwiftUI 视图更新过程中触发新的状态变化，防止警告和未定义行为
+    /// 同一 RunLoop 周期内的多次调用会合并为一次通知，避免：
+    /// 1. SwiftUI 视图更新中发布变更的警告
+    /// 2. updateHotKey 同时修改两个值时触发两次 reRegister
     private func notifyChange() {
+        guard !notifyPending else { return }
+        notifyPending = true
         DispatchQueue.main.async { [weak self] in
+            self?.notifyPending = false
             self?.objectWillChange.send()
         }
     }
@@ -147,10 +154,13 @@ class SettingsManager: ObservableObject {
         return parts.joined(separator: "+")
     }
 
-    /// 同时更新修饰键和主键码
+    /// 原子更新修饰键和主键码（只触发一次通知，避免 reRegister 被调用两次）
     func updateHotKey(modifiers: UInt64, keyCode: Int) {
-        hotKeyModifiers = modifiers
-        hotKeyKeyCode = keyCode
+        _hotKeyModifiers = modifiers
+        _hotKeyKeyCode = keyCode
+        defaults.set(modifiers, forKey: SettingsKey.hotKeyModifiers)
+        defaults.set(keyCode, forKey: SettingsKey.hotKeyKeyCode)
+        notifyChange()
     }
 
     /// 将虚拟键码转换为可读的按键名称

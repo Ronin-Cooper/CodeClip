@@ -10,6 +10,15 @@ struct CodeClipApp: App {
     @StateObject private var settings = SettingsManager.shared
 
     init() {
+        // 防止多开：检查是否已有实例在运行，如果有则退出当前实例
+        let bundleId = Bundle.main.bundleIdentifier ?? ""
+        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId)
+        if runningApps.count > 1 {
+            // 已有实例在运行，退出当前实例
+            NSApp.terminate(nil)
+            return
+        }
+
         // 注册全局快捷键回调：按下快捷键时切换剪贴板面板的显示/隐藏
         HotKeyManager.shared.onHotKey = {
             DispatchQueue.main.async {
