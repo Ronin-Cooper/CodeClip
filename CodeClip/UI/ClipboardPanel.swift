@@ -1,0 +1,268 @@
+import AppKit
+import SwiftUI
+
+/// 剪贴板历史浮动面板
+///
+/// 使用 NSPanel 实现的无边框浮动窗口，用于显示剪贴板历史记录列表。
+/// 支持三种定位模式（屏幕居中/跟随光标/屏幕顶部），通过设置动态配置。
+/// 点击面板外部区域或按 ESC 键关闭面板。
+class ClipboardPanel: NSPanel {
+    static let shared = ClipboardPanel()
+
+    // MARK: - 面板尺寸配置
+
+    private let panelWidth: CGFloat = 360
+    private let panelMaxHeight: CGFloat = 500
+    private let cornerRadius: CGFloat = 12
+
+    // MARK: - 私有属性
+
+    private var previousApp: NSRunningApplication?       // 打开面板前的活跃应用，关闭时恢复
+    private var hostingView: NSHostingView<ClipboardHistoryView>?
+    private var globalMonitor: Any?                    // 全局鼠标事件监听（面板外点击）
+    private var localMonitor: Any?                     // 本地鼠标事件监听（面板内点击）
+
+    // MARK: - 初始化
+
+    init() {
+        super.init(
+            contentRect: NSRect(x: 0, y: 0, width: panelWidth, height: panelMaxHeight),
+            styleMask: [.borderless],  // 无边框样式
+            backing: .buffered,
+            defer: false
+        )
+
+        // 面板属性配置
+        isFloatingPanel = true                          // 浮动面板，始终在其他窗口之上
+        level = .floating                               // 浮动层级
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]  // 跨 Space 显示
+        backgroundColor = NSColor.clear                 // 透明背景（由 SwiftUI 视图控制外观）
+        isMovableByWindowBackground = true              // 允许拖动面板
+        hasShadow = false                               // 不使用系统阴影（由 SwiftUI 实现）
+        animationBehavior = .none                       // 禁用系统动画（使用自定义动画）
+        hidesOnDeactivate = false                       // 不自动隐藏（由事件监听器控制关闭）
+        isOpaque = false                                // 非不透明（支持毛玻璃效果）
+
+        setupNotifications()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var canBecomeKey: Bool { true }   // 允许成为 key window（接收键盘事件）
+    override var canBecomeMain: Bool { true }  // 允许成为 main window
+
+    // MARK: - 通知设置
+
+    /// 监听剪贴板历史变化，实时更新面板内容
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(clipboardDidChange),
+            name: ClipboardManager.historyDidChangeNotification,
+            object: nil
+        )
+    }
+
+    // MARK: - 事件监听
+
+    /// 设置鼠标事件监听器，用于点击面板外部时关闭面板
+    private func setupEventMonitors() {
+        // 全局监听：检测面板外部的鼠标点击（屏幕坐标）
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            guard let self = self else { return }
+            let clickLocation = event.locationInWindow
+            // 忽略设置窗口区域的点击（避免打开设置时关闭面板）
+            if SettingsWindow.shared.isVisible, SettingsWindow.shared.frame.contains(clickLocation) {
+                return
+            }
+            if !self.frame.contains(clickLocation) {
+                self.hide()
+            }
+        }
+        // 本地监听：检测面板内部的鼠标点击（窗口局部坐标）
+        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            guard let self = self else { return event }
+            // 仅处理面板自身的点击事件
+            if event.window === self {
+                let clickLocation = event.locationInWindow
+                let panelBounds = NSRect(origin: .zero, size: self.frame.size)
+                if !panelBounds.contains(clickLocation) {
+                    self.hide()
+                }
+            }
+            return event
+        }
+    }
+
+    /// 移除事件监听器
+    private func removeEventMonitors() {
+        if let monitor = globalMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalMonitor = nil
+        }
+        if let monitor = localMonitor {
+            NSEvent.removeMonitor(monitor)
+            localMonitor = nil
+        }
+    }
+
+    // MARK: - 视图构建
+
+    /// 创建剪贴板历史的 SwiftUI 视图
+    private func makeSwiftUIView() -> ClipboardHistoryView {
+        ClipboardHistoryView(
+            items: ClipboardManager.shared.history,
+            onPaste: { index in
+                self.pasteItem(at: index)
+            },
+            onPin: { id in
+                ClipboardManager.shared.togglePin(id: id)
+            },
+            onDelete: { id in
+                ClipboardManager.shared.deleteItem(with: id)
+            },
+            onClearAll: {
+                ClipboardManager.shared.clearAll()
+            }
+        )
+    }
+
+    // MARK: - 显示/隐藏
+
+    /// 显示面板（带淡入动画）
+    func show() {
+        previousApp = NSWorkspace.shared.frontmostApplication  // 记住当前活跃应用
+        positionPanel()                                         // 根据设置定位面板
+        alphaValue = 0                                          // 初始透明
+
+        // 重建 SwiftUI 视图
+        hostingView?.removeFromSuperview()
+        hostingView = NSHostingView(rootView: makeSwiftUIView())
+        hostingView?.frame = NSRect(x: 0, y: 0, width: panelWidth, height: panelMaxHeight)
+        contentView = hostingView
+
+        orderFrontRegardless()                           // 强制显示在最前
+        makeKeyAndOrderFront(nil)                        // 成为 key window
+        NSApp.activate(ignoringOtherApps: true)          // 激活应用
+
+        setupEventMonitors()                             // 开始监听鼠标事件
+
+        // 淡入动画
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.15
+            animator().alphaValue = 1.0
+        }
+    }
+
+    /// 隐藏面板（带淡出动画）
+    /// - Parameter restorePreviousApp: 是否恢复之前的活跃应用，打开设置窗口时为 false
+    func hide(restorePreviousApp: Bool = true) {
+        removeEventMonitors()  // 停止监听鼠标事件
+        // 淡出动画
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.12
+            animator().alphaValue = 0.0
+        } completionHandler: {
+            self.orderOut(nil)
+            if restorePreviousApp {
+                self.previousApp?.activate()  // 恢复到之前的应用
+            }
+        }
+    }
+
+    /// 切换面板显示/隐藏
+    func toggle() {
+        if isVisible {
+            hide()
+        } else {
+            show()
+        }
+    }
+
+    /// ESC 键关闭面板
+    override func cancelOperation(_ sender: Any?) {
+        hide()
+    }
+
+    // MARK: - 面板定位
+
+    /// 根据设置选择定位模式
+    private func positionPanel() {
+        let position = SettingsManager.shared.panelPosition
+
+        switch position {
+        case .center:
+            positionCenter()
+        case .followCursor:
+            positionFollowCursor()
+        case .top:
+            positionTop()
+        }
+    }
+
+    /// 定位到屏幕居中偏上位置
+    private func positionCenter() {
+        guard let screen = NSScreen.main else { return }
+        let rect = screen.visibleFrame
+        let x = (rect.width - panelWidth) / 2 + rect.origin.x
+        let y = rect.origin.y + rect.height * 0.65  // 屏幕 65% 高度处
+        setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
+    }
+
+    /// 定位到鼠标光标下方
+    private func positionFollowCursor() {
+        let mouseLocation = NSEvent.mouseLocation
+        let x = mouseLocation.x - panelWidth / 2          // 水平居中于光标
+        let y = mouseLocation.y - panelMaxHeight - 20     // 光标下方 20px
+        setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
+    }
+
+    /// 定位到屏幕顶部
+    private func positionTop() {
+        guard let screen = NSScreen.main else { return }
+        let rect = screen.visibleFrame
+        let x = (rect.width - panelWidth) / 2 + rect.origin.x
+        let y = rect.origin.y + rect.height - panelMaxHeight - 10  // 顶部下方 10px
+        setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
+    }
+
+    // MARK: - 剪贴板操作
+
+    /// 剪贴板变化时刷新视图
+    @objc private func clipboardDidChange() {
+        guard isVisible else { return }
+        hostingView?.rootView = makeSwiftUIView()
+    }
+
+    /// 粘贴指定索引的剪贴板项
+    /// 流程：写入剪贴板 → 关闭面板 → 模拟 Cmd+V
+    private func pasteItem(at index: Int) {
+        let items = ClipboardManager.shared.history
+        guard index < items.count else { return }
+
+        let item = items[index]
+        let pb = NSPasteboard.general
+
+        // 标记跳过下一次剪贴板变化，防止被重新记录
+        ClipboardManager.shared.ignoreNextPasteboardChange()
+
+        // 写入剪贴板
+        pb.clearContents()
+        switch item.content {
+        case .text(let text):
+            pb.setString(text, forType: .string)
+        case .image(let image):
+            if let tiff = image.tiffRepresentation {
+                pb.setData(tiff, forType: .tiff)
+            }
+        }
+
+        // 关闭面板，稍后模拟粘贴（等待面板关闭动画完成）
+        hide()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            PasteSimulator.simulatePaste()
+        }
+    }
+}

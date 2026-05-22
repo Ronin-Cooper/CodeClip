@@ -1,0 +1,89 @@
+{
+  "" : {
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClip-primary.dia",
+    "emit-module-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClip-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClip-primary-emit-module.dia",
+    "pch" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClip-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClip-primary.swiftdeps"
+  },
+  "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/CodeClipApp.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/CodeClipApp~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/ContentView.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/Models/ClipboardItem.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardItem~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/Services/ClipboardManager.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardManager~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/Services/HotKeyManager.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/HotKeyManager~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/Services/PasteSimulator.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/PasteSimulator~partial.swiftmodule"
+  },
+  "/Users/cooper/project/swift/CodeClip/CodeClip/UI/ClipboardPanel.swift" : {
+    "const-values" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.swiftconstvalues",
+    "dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.d",
+    "diagnostics" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.dia",
+    "index-unit-output-path" : "/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.o",
+    "llvm-bc" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.bc",
+    "object" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.o",
+    "swift-dependencies" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel.swiftdeps",
+    "swiftmodule" : "/Users/cooper/project/swift/CodeClip/.build/Build/Intermediates.noindex/CodeClip.build/Debug/CodeClip.build/Objects-normal/arm64/ClipboardPanel~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/cooper/project/swift/CodeClip/CodeClip/CodeClipApp.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "CodeClip",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quit CodeClip",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 18
+        }
+      }
+    ]
+  },
+  "version": 1
+}
