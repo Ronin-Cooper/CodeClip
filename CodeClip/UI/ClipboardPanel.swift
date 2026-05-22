@@ -20,7 +20,6 @@ class ClipboardPanel: NSPanel {
     private var previousApp: NSRunningApplication?       // 打开面板前的活跃应用，关闭时恢复
     private var hostingView: NSHostingView<ClipboardHistoryView>?
     private var globalMonitor: Any?                    // 全局鼠标事件监听（面板外点击）
-    private var localMonitor: Any?                     // 本地鼠标事件监听（面板内点击）
 
     // MARK: - 初始化
 
@@ -81,19 +80,6 @@ class ClipboardPanel: NSPanel {
                 self.hide()
             }
         }
-        // 本地监听：检测面板内部的鼠标点击（窗口局部坐标）
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            guard let self = self else { return event }
-            // 仅处理面板自身的点击事件
-            if event.window === self {
-                let clickLocation = event.locationInWindow
-                let panelBounds = NSRect(origin: .zero, size: self.frame.size)
-                if !panelBounds.contains(clickLocation) {
-                    self.hide()
-                }
-            }
-            return event
-        }
     }
 
     /// 移除事件监听器
@@ -101,10 +87,6 @@ class ClipboardPanel: NSPanel {
         if let monitor = globalMonitor {
             NSEvent.removeMonitor(monitor)
             globalMonitor = nil
-        }
-        if let monitor = localMonitor {
-            NSEvent.removeMonitor(monitor)
-            localMonitor = nil
         }
     }
 
