@@ -141,8 +141,7 @@ chore: 构建/工具
 ## 📧 联系方式
 
 - 作者: cooper
-- 邮箱: your-email@example.com
-- GitHub: [@yourusername](https://github.com/yourusername)
+- 邮箱: cooper.hy.zhang@outlook.com
 
 ---
 
