@@ -175,38 +175,65 @@ class ClipboardPanel: NSPanel {
         let position = SettingsManager.shared.panelPosition
 
         switch position {
-        case .center:
-            positionCenter()
         case .followCursor:
             positionFollowCursor()
         case .top:
-            positionTop()
+            positionCenterTop()
+        case .rightBottom:
+            positionScreenBottomRight()
+        case .leftBottom:
+            positionScreenBottomLeft()
         }
     }
 
+    /// 获取鼠标当前所在屏幕的安全方法（关闭独立空间后仍需动态匹配）
+    private var currentScreen: NSScreen? {
+        let mouseLoc = NSEvent.mouseLocation
+        return NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) })
+            ?? NSScreen.main
+    }
+
     /// 定位到屏幕居中偏上位置
-    private func positionCenter() {
-        guard let screen = NSScreen.main else { return }
+    private func positionCenterTop() {
+        guard let screen = currentScreen else { return }
         let rect = screen.visibleFrame
-        let x = (rect.width - panelWidth) / 2 + rect.origin.x
-        let y = rect.origin.y + rect.height * 0.65  // 屏幕 65% 高度处
+        let topOffset = rect.height * 0.2
+        let x = rect.midX - panelWidth / 2
+        let y = rect.maxY - panelMaxHeight - topOffset
         setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
     }
 
-    /// 定位到鼠标光标下方
+    /// 定位到光标右下方
     private func positionFollowCursor() {
+        guard let screen = currentScreen else { return }
         let mouseLocation = NSEvent.mouseLocation
-        let x = mouseLocation.x - panelWidth / 2          // 水平居中于光标
-        let y = mouseLocation.y - panelMaxHeight - 20     // 光标下方 20px
+        let cursorOffset: CGFloat = 15
+        var x = mouseLocation.x + cursorOffset
+        var y = mouseLocation.y - panelMaxHeight - cursorOffset
+
+        // 边界钳制：确保面板不超出当前屏幕可见区域
+        let visibleFrame = screen.visibleFrame
+        x = max(visibleFrame.minX, min(x, visibleFrame.maxX - panelWidth))
+        y = max(visibleFrame.minY, min(y, visibleFrame.maxY - panelMaxHeight))
+
         setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
     }
 
-    /// 定位到屏幕顶部
-    private func positionTop() {
-        guard let screen = NSScreen.main else { return }
+    /// 定位到屏幕右下角
+    private func positionScreenBottomRight() {
+        guard let screen = currentScreen else { return }
         let rect = screen.visibleFrame
-        let x = (rect.width - panelWidth) / 2 + rect.origin.x
-        let y = rect.origin.y + rect.height - panelMaxHeight - 10  // 顶部下方 10px
+        let x = rect.maxX - panelWidth - 10
+        let y = rect.minY + 10
+        setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
+    }
+
+    /// 定位到屏幕左下角
+    private func positionScreenBottomLeft() {
+        guard let screen = currentScreen else { return }
+        let rect = screen.visibleFrame
+        let x = rect.minX + 10
+        let y = rect.minY + 10
         setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelMaxHeight), display: false)
     }
 

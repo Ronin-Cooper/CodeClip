@@ -92,7 +92,8 @@ class SettingsManager: ObservableObject {
             notifyChange()
         }
     }
-    private var _panelPosition: PanelPosition = .center
+    // 默认跟随光标
+    private var _panelPosition: PanelPosition = .followCursor
 
     // MARK: - Computed Properties（计算属性）
 
@@ -117,7 +118,7 @@ class SettingsManager: ObservableObject {
         _hotKeyKeyCode = d.object(forKey: SettingsKey.hotKeyKeyCode) as? Int ?? SettingsKey.defaultKeyCode
         _maxItemsOption = MaxItemsOption(rawValue: d.object(forKey: SettingsKey.maxItems) as? Int ?? MaxItemsOption.oneHundred.rawValue) ?? .oneHundred
         _autoClearOption = AutoClearOption(rawValue: d.object(forKey: SettingsKey.autoClearDays) as? Int ?? AutoClearOption.never.rawValue) ?? .never
-        _panelPosition = PanelPosition(rawValue: d.string(forKey: SettingsKey.panelPosition) ?? PanelPosition.center.rawValue) ?? .center
+        _panelPosition = PanelPosition(rawValue: d.string(forKey: SettingsKey.panelPosition) ?? PanelPosition.followCursor.rawValue) ?? .followCursor
     }
 
     // MARK: - Change Notification

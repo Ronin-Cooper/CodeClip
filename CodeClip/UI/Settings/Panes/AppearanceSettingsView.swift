@@ -64,9 +64,10 @@ struct AppearanceSettingsView: View {
     /// 根据面板位置返回对应的 SF Symbol 图标
     private func iconForPosition(_ position: PanelPosition) -> String {
         switch position {
-        case .center: return "rectangle.center.inset.filled"
         case .followCursor: return "cursorarrow.rays"
         case .top: return "arrow.up.to.line"
+        case .rightBottom: return "arrow.down.right"
+        case .leftBottom: return "arrow.down.left"
         }
     }
 }

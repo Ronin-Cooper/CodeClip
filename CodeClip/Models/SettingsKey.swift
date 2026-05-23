@@ -25,17 +25,19 @@ enum SettingsKey {
 
 /// 面板显示位置
 enum PanelPosition: String, CaseIterable, Identifiable {
-    case center = "center"
     case followCursor = "followCursor"
     case top = "top"
+    case rightBottom = "rightBottom"
+    case leftBottom = "center"
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
-        case .center: return "屏幕居中"
         case .followCursor: return "跟随光标"
         case .top: return "屏幕顶部"
+        case .rightBottom: return"右侧底部"
+        case .leftBottom: return "左侧底部"
         }
     }
 }
