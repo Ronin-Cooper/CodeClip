@@ -2,7 +2,7 @@
 
 [![macOS](https://img.shields.io/badge/macOS-13.0%2B-blue.svg)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange.svg)](https://swift.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 CodeClip 是一款轻量级的 macOS 剪贴板历史管理器，常驻菜单栏，帮助你轻松管理和复用复制过的内容。
 
