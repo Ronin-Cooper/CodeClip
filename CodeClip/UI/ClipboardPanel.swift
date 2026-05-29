@@ -20,6 +20,11 @@ class ClipboardPanel: NSPanel {
     private var previousApp: NSRunningApplication?       // 打开面板前的活跃应用，关闭时恢复
     private var hostingView: NSHostingView<ClipboardHistoryView>?
     private var globalMonitor: Any?                    // 全局鼠标事件监听（面板外点击）
+    
+    private var localMonitor: Any?      // 【新增】本地鼠标事件监听（面板内部点击）
+    private var isClickInsidePanel = false // 【新增】标记当前点击是否发生在面板内部
+    // 用时间戳代替布尔标志，避免状态残留
+    private var lastLocalClickTime: TimeInterval = 0
 
     // MARK: - 初始化
 
@@ -68,26 +73,58 @@ class ClipboardPanel: NSPanel {
 
     /// 设置鼠标事件监听器，用于点击面板外部时关闭面板
     private func setupEventMonitors() {
-        // 全局监听：检测面板外部的鼠标点击（屏幕坐标）
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            guard let self = self else { return }
-            let clickLocation = event.locationInWindow
-            // 忽略设置窗口区域的点击（避免打开设置时关闭面板）
-            if SettingsWindow.shared.isVisible, SettingsWindow.shared.frame.contains(clickLocation) {
-                return
+        // 【关键修改】本地监听：仅记录点击时间戳，绝不消费事件（始终返回 event）
+            localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+                guard let self = self else { return event }
+                
+                let locationInPanel = self.contentView?.convert(event.locationInWindow, from: nil) ?? .zero
+                let isInContentArea = self.contentView?.bounds.contains(locationInPanel) ?? false
+                
+                if isInContentArea {
+                    // ✅ 只记录时间戳，不消费事件，按钮和关闭按钮正常响应
+                    self.lastLocalClickTime = event.timestamp
+                }
+                
+                // ✅ 始终返回 event，保证事件继续派发给 NSButton / NSWindow
+                return event
             }
-            if !self.frame.contains(clickLocation) {
-                self.hide()
+            
+            // 全局监听：通过时间戳判断是否为同一次点击
+            globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+                guard let self = self else { return }
+                
+                // 设置窗口打开时，不处理任何关闭逻辑
+                if SettingsWindow.shared.isVisible {
+                    return
+                }
+                
+                // 【关键】如果全局事件与本地事件时间戳相同（或极接近），
+                // 说明这是面板内部的同一次点击，跳过关闭
+                let timeDiff = abs(event.timestamp - self.lastLocalClickTime)
+                if timeDiff < 0.05 { // 50ms 容差，覆盖事件派发延迟
+                    return
+                }
+                
+                let clickLocation = event.locationInWindow
+                let paddedFrame = self.frame.insetBy(dx: -2, dy: -2)
+                
+                if !paddedFrame.contains(clickLocation) {
+                    self.hide()
+                }
             }
-        }
     }
 
     /// 移除事件监听器
     private func removeEventMonitors() {
         if let monitor = globalMonitor {
-            NSEvent.removeMonitor(monitor)
-            globalMonitor = nil
-        }
+                NSEvent.removeMonitor(monitor)
+                globalMonitor = nil
+            }
+            if let monitor = localMonitor {
+                NSEvent.removeMonitor(monitor)
+                localMonitor = nil
+            }
+            lastLocalClickTime = 0
     }
 
     // MARK: - 视图构建

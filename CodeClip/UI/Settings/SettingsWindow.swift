@@ -11,6 +11,17 @@ class SettingsWindow: NSPanel {
     private let windowWidth: CGFloat = 600
     private let windowHeight: CGFloat = 450
     private var hostingView: NSHostingView<SettingsView>?
+    
+    // 【关键】确保窗口可以成为主窗口和关键窗口
+    // 【关键】通过重写来声明窗口可以成为 Key Window
+    override var canBecomeKey: Bool {
+        return true
+    }
+    
+    // 【关键】通过重写来声明窗口可以成为 Main Window
+    override var canBecomeMain: Bool {
+        return true
+    }
 
     init() {
         super.init(
@@ -19,6 +30,9 @@ class SettingsWindow: NSPanel {
             backing: .buffered,
             defer: false
         )
+        
+        // 【关键】禁止失焦时自动隐藏/关闭
+        self.hidesOnDeactivate = false
 
         title = "设置"
         isFloatingPanel = false                        // 非浮动窗口（普通窗口层级）
