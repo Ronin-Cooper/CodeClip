@@ -80,3 +80,6 @@ Temporary Items
 
 # Claude Code
 .claude/
+
+# copilot
+.github/
