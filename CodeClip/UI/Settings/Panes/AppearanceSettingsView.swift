@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 外观设置面板
-/// 包含：面板显示位置（屏幕居中/跟随光标/屏幕顶部）
+/// 包含：面板显示位置、应用主题
 struct AppearanceSettingsView: View {
     @ObservedObject private var settings = SettingsManager.shared
 
@@ -11,8 +11,28 @@ struct AppearanceSettingsView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
 
+            // MARK: - 主题设置
             VStack(alignment: .leading, spacing: 16) {
-                // 面板位置标题
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("主题")
+                        .font(.body)
+                    Text("设置剪贴板面板的显示主题")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                HStack(spacing: 12) {
+                    ForEach(AppTheme.allCases) { theme in
+                        themeCard(theme: theme)
+                    }
+                }
+            }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
+            .cornerRadius(8)
+
+            // MARK: - 面板位置
+            VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("面板位置")
                         .font(.body)
@@ -58,6 +78,35 @@ struct AppearanceSettingsView: View {
             .cornerRadius(8)
 
             Spacer()
+        }
+    }
+
+    // MARK: - 主题卡片
+
+    @ViewBuilder
+    private func themeCard(theme: AppTheme) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: theme.icon)
+                .font(.system(size: 22))
+                .foregroundColor(settings.appTheme == theme ? .white : .primary)
+
+            Text(theme.displayName)
+                .font(.caption)
+                .foregroundColor(settings.appTheme == theme ? .white : .secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(settings.appTheme == theme ? Color.blue : Color(NSColor.controlAccentColor).opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(settings.appTheme == theme ? Color.blue : Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            settings.appTheme = theme
         }
     }
 

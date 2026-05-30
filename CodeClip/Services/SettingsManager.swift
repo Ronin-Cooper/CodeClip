@@ -95,6 +95,19 @@ class SettingsManager: ObservableObject {
     // 默认跟随光标
     private var _panelPosition: PanelPosition = .followCursor
 
+    /// 应用主题（浅色/深色/跟随系统）
+    var appTheme: AppTheme {
+        get { _appTheme }
+        set {
+            guard _appTheme != newValue else { return }
+            _appTheme = newValue
+            defaults.set(newValue.rawValue, forKey: SettingsKey.appTheme)
+            applyTheme()
+            notifyChange()
+        }
+    }
+    private var _appTheme: AppTheme = .system
+
     // MARK: - Computed Properties（计算属性）
 
     /// 最大记录数（便捷访问）
@@ -119,6 +132,10 @@ class SettingsManager: ObservableObject {
         _maxItemsOption = MaxItemsOption(rawValue: d.object(forKey: SettingsKey.maxItems) as? Int ?? MaxItemsOption.oneHundred.rawValue) ?? .oneHundred
         _autoClearOption = AutoClearOption(rawValue: d.object(forKey: SettingsKey.autoClearDays) as? Int ?? AutoClearOption.never.rawValue) ?? .never
         _panelPosition = PanelPosition(rawValue: d.string(forKey: SettingsKey.panelPosition) ?? PanelPosition.followCursor.rawValue) ?? .followCursor
+        _appTheme = AppTheme(rawValue: d.string(forKey: SettingsKey.appTheme) ?? AppTheme.system.rawValue) ?? .system
+
+        // 启动时应用主题设置
+        applyTheme()
     }
 
     // MARK: - Change Notification
@@ -179,5 +196,22 @@ class SettingsManager: ObservableObject {
             0x30: "Tab", 0x33: "Delete", 0x35: "Esc",
         ]
         return keyMap[keyCode] ?? "Key\(keyCode)"
+    }
+
+    // MARK: - Theme Helpers
+
+    /// 根据当前主题设置应用外观
+    private func applyTheme() {
+        // NSApp 可能在 SettingsManager.init() 时尚未完全初始化，延迟到主线程执行
+        DispatchQueue.main.async {
+            switch self.appTheme {
+            case .system:
+                NSApp.appearance = nil  // 跟随系统
+            case .light:
+                NSApp.appearance = NSAppearance(named: .aqua)
+            case .dark:
+                NSApp.appearance = NSAppearance(named: .darkAqua)
+            }
+        }
     }
 }
