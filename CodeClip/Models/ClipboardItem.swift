@@ -33,6 +33,17 @@ enum ClipboardContent: Equatable {
         }
     }
 
+    /// 图片尺寸描述（仅图片类型有效），如 "1920×1080"
+    var imageDimensionText: String? {
+        switch self {
+        case .image(let image):
+            let w = Int(image.size.width)
+            let h = Int(image.size.height)
+            return "\(w)×\(h)"
+        case .text: return nil
+        }
+    }
+
     /// 完整文本内容（仅文本类型有效）
     var fullText: String? {
         switch self {
@@ -43,13 +54,11 @@ enum ClipboardContent: Equatable {
 }
 
 /// 剪贴板历史记录项，包含内容、时间戳和固定状态
-struct ClipboardItem: Identifiable, Equatable {
+/// 注意：不实现 Equatable，避免按内容比较掩盖 id/timestamp/isPinned 的差异
+/// 去重场景直接使用 item.content == other.content 显式比较
+struct ClipboardItem: Identifiable {
     let id = UUID()
     let content: ClipboardContent
     let timestamp: Date
     var isPinned: Bool = false  // 固定项不会被自动清除或"清除全部"删除
-
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.content == rhs.content
-    }
 }

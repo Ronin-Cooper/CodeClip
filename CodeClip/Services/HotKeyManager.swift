@@ -1,5 +1,6 @@
 import ApplicationServices
 import Combine
+import AppKit
 
 /// 全局快捷键管理器 - 监听键盘事件，触发剪贴板面板显示
 ///
@@ -39,6 +40,40 @@ class HotKeyManager {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - 权限检测
+
+    /// 检查辅助功能权限，未授权时弹出引导对话框
+    /// - Parameter showOnFailure: 是否在权限缺失时弹出对话框（启动时传 true，后续检查传 false）
+    @discardableResult
+    func checkAccessibilityPermission(showOnFailure: Bool = false) -> Bool {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): showOnFailure] as CFDictionary
+        let trusted = AXIsProcessTrustedWithOptions(options)
+
+        if !trusted && showOnFailure {
+            // 延迟弹出对话框，确保 UI 已就绪
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.showAccessibilityAlert()
+            }
+        }
+        return trusted
+    }
+
+    /// 弹出辅助功能权限引导对话框
+    private func showAccessibilityAlert() {
+        let alert = NSAlert()
+        alert.messageText = "需要辅助功能权限"
+        alert.informativeText = "CodeClip 需要辅助功能权限才能使用全局快捷键和模拟粘贴。\n\n请在「系统设置 → 隐私与安全性 → 辅助功能」中允许 CodeClip。"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "打开系统设置")
+        alert.addButton(withTitle: "稍后")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
+        }
     }
 
     // MARK: - 注册/注销

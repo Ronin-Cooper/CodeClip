@@ -159,33 +159,59 @@ private struct ClipboardRowView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Content area
-            HStack(spacing: 10) {
-                // Type icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(typeIconColor)
-                        .frame(width: 32, height: 32)
-                    Image(systemName: typeIcon)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
+            // Content area — different layout for text vs image
+            switch item.content {
+            case .text:
+                HStack(spacing: 10) {
+                    // Type icon
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(typeIconColor)
+                            .frame(width: 32, height: 32)
+                        Image(systemName: typeIcon)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+
+                    // Content preview
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(contentPreview)
+                            .font(.system(size: 13, design: .monospaced))
+                            .lineLimit(2)
+                            .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text(timeAgo)
+                            .font(.caption2)
+                            .foregroundColor(.secondary.opacity(0.7))
+                    }
                 }
+                .padding(.leading, 10)
+                .padding(.vertical, 8)
 
-                // Content preview
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(contentPreview)
-                        .font(.system(size: 13, design: .monospaced))
-                        .lineLimit(2)
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            case .image(let nsImage):
+                // Image thumbnail spanning the full content area
+                let thumbHeight = rowHeight - 16  // 减去上下各 8px 的 padding
+                ZStack(alignment: .bottomLeading) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: thumbHeight)
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
 
+                    // Timestamp overlay
                     Text(timeAgo)
                         .font(.caption2)
-                        .foregroundColor(.secondary.opacity(0.7))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                        .padding(3)
                 }
+                .padding(.leading, 10)
+                .padding(.vertical, 8)
             }
-            .padding(.leading, 10)
-            .padding(.vertical, 8)
 
             Spacer(minLength: 8)
 
@@ -204,7 +230,7 @@ private struct ClipboardRowView: View {
             }
             .padding(.trailing, 8)
         }
-        .frame(height: 48)
+        .frame(height: rowHeight)
         .background(
             RoundedRectangle(cornerRadius: 6)
                 .fill(isHovered ? Color.primary.opacity(0.06) : Color.clear)
@@ -218,6 +244,14 @@ private struct ClipboardRowView: View {
                 showActions = hovering
             }
             onHover(hovering)
+        }
+    }
+
+    /// 行高：文本行紧凑显示，图片行增高以保持缩略图比例
+    private var rowHeight: CGFloat {
+        switch item.content {
+        case .text: return 48
+        case .image: return 100
         }
     }
 
@@ -239,7 +273,12 @@ private struct ClipboardRowView: View {
 
     /// 内容预览文本
     private var contentPreview: String {
-        item.content.previewText
+        switch item.content {
+        case .text:
+            return item.content.previewText
+        case .image:
+            return item.content.imageDimensionText ?? "[Image]"
+        }
     }
 
     /// 复制时间（HH:mm 格式，静态显示）

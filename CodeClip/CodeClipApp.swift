@@ -25,6 +25,8 @@ struct CodeClipApp: App {
                 ClipboardPanel.shared.toggle()
             }
         }
+        // 首次启动时检测辅助功能权限，未授权则弹出引导对话框
+        HotKeyManager.shared.checkAccessibilityPermission(showOnFailure: true)
         HotKeyManager.shared.register()
 
         // 强制初始化剪贴板管理器单例，启动定时器轮询

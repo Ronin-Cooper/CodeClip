@@ -19,12 +19,9 @@ class ClipboardPanel: NSPanel {
 
     private var previousApp: NSRunningApplication?       // 打开面板前的活跃应用，关闭时恢复
     private var hostingView: NSHostingView<ClipboardHistoryView>?
-    private var globalMonitor: Any?                    // 全局鼠标事件监听（面板外点击）
-    
-    private var localMonitor: Any?      // 【新增】本地鼠标事件监听（面板内部点击）
-    private var isClickInsidePanel = false // 【新增】标记当前点击是否发生在面板内部
-    // 用时间戳代替布尔标志，避免状态残留
-    private var lastLocalClickTime: TimeInterval = 0
+    private var globalMonitor: Any?        // 全局鼠标事件监听（面板外点击关闭）
+    private var lastClickTime: TimeInterval = 0  // 最近一次内部交互时间戳
+    private var isHiding = false           // 标记是否正在执行隐藏动画，防止重复调用
 
     // MARK: - 初始化
 
@@ -39,12 +36,12 @@ class ClipboardPanel: NSPanel {
         // 面板属性配置
         isFloatingPanel = true                          // 浮动面板，始终在其他窗口之上
         level = .floating                               // 浮动层级
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .ignoresCycle]  // 跨 Space 显示
+        collectionBehavior = [.fullScreenAuxiliary, .ignoresCycle, .transient]  // 不跨 Space，失焦时自动隐藏
         backgroundColor = NSColor.clear                 // 透明背景（由 SwiftUI 视图控制外观）
         isMovableByWindowBackground = true              // 允许拖动面板
         hasShadow = false                               // 不使用系统阴影（由 SwiftUI 实现）
         animationBehavior = .none                       // 禁用系统动画（使用自定义动画）
-        hidesOnDeactivate = false                       // 不自动隐藏（由事件监听器控制关闭）
+        hidesOnDeactivate = true                        // 失焦时自动隐藏（配合 .transient）
         isOpaque = false                                // 非不透明（支持毛玻璃效果）
 
         setupNotifications()
@@ -71,60 +68,56 @@ class ClipboardPanel: NSPanel {
 
     // MARK: - 事件监听
 
-    /// 设置鼠标事件监听器，用于点击面板外部时关闭面板
+    /// 设置全局鼠标事件监听器
     private func setupEventMonitors() {
-        // 【关键修改】本地监听：仅记录点击时间戳，绝不消费事件（始终返回 event）
-            localMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-                guard let self = self else { return event }
-                
-                let locationInPanel = self.contentView?.convert(event.locationInWindow, from: nil) ?? .zero
-                let isInContentArea = self.contentView?.bounds.contains(locationInPanel) ?? false
-                
-                if isInContentArea {
-                    // ✅ 只记录时间戳，不消费事件，按钮和关闭按钮正常响应
-                    self.lastLocalClickTime = event.timestamp
-                }
-                
-                // ✅ 始终返回 event，保证事件继续派发给 NSButton / NSWindow
-                return event
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            guard let self = self else { return }
+
+            // 设置窗口打开时，不处理任何关闭逻辑
+            if SettingsWindow.shared.isVisible {
+                return
             }
-            
-            // 全局监听：通过时间戳判断是否为同一次点击
-            globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-                guard let self = self else { return }
-                
-                // 设置窗口打开时，不处理任何关闭逻辑
-                if SettingsWindow.shared.isVisible {
-                    return
-                }
-                
-                // 【关键】如果全局事件与本地事件时间戳相同（或极接近），
-                // 说明这是面板内部的同一次点击，跳过关闭
-                let timeDiff = abs(event.timestamp - self.lastLocalClickTime)
-                if timeDiff < 0.05 { // 50ms 容差，覆盖事件派发延迟
-                    return
-                }
-                
-                let clickLocation = event.locationInWindow
-                let paddedFrame = self.frame.insetBy(dx: -2, dy: -2)
-                
-                if !paddedFrame.contains(clickLocation) {
-                    self.hide()
-                }
+
+            // 点击来源是面板自身（包括 panel 上的 SwiftUI 控件），直接跳过关闭
+            if event.windowNumber == self.windowNumber {
+                return
             }
+
+            // 将点击位置转换为屏幕坐标
+            // locationInWindow 是事件源窗口的本地坐标，需要加上该窗口的屏幕原点
+            let clickScreenLocation: NSPoint
+            if let eventWindow = event.window {
+                clickScreenLocation = NSPoint(
+                    x: event.locationInWindow.x + eventWindow.frame.origin.x,
+                    y: event.locationInWindow.y + eventWindow.frame.origin.y
+                )
+            } else {
+                clickScreenLocation = event.locationInWindow
+            }
+
+            // 坐标检查：点击位置在面板扩展区域内，直接跳过关闭
+            let paddedFrame = self.frame.insetBy(dx: -12, dy: -12)
+            if paddedFrame.contains(clickScreenLocation) {
+                return
+            }
+
+            // 时间戳检测：如果此前有面板内的交互（按钮点击等），视为同一次操作，跳过关闭
+            let timeDiff = abs(event.timestamp - self.lastClickTime)
+            if timeDiff < 0.3 { // 300ms 容差，覆盖 View 重建和动画延迟
+                return
+            }
+
+            self.hide()
+        }
     }
 
     /// 移除事件监听器
     private func removeEventMonitors() {
         if let monitor = globalMonitor {
-                NSEvent.removeMonitor(monitor)
-                globalMonitor = nil
-            }
-            if let monitor = localMonitor {
-                NSEvent.removeMonitor(monitor)
-                localMonitor = nil
-            }
-            lastLocalClickTime = 0
+            NSEvent.removeMonitor(monitor)
+            globalMonitor = nil
+        }
+        lastClickTime = 0
     }
 
     // MARK: - 视图构建
@@ -152,6 +145,12 @@ class ClipboardPanel: NSPanel {
 
     /// 显示面板（带淡入动画）
     func show() {
+        // 如果正在执行隐藏动画，先完成隐藏再显示，避免状态冲突
+        if isHiding {
+            isHiding = false
+            orderOut(nil)
+        }
+
         previousApp = NSWorkspace.shared.frontmostApplication  // 记住当前活跃应用
         positionPanel()                                         // 根据设置定位面板
         alphaValue = 0                                          // 初始透明
@@ -164,9 +163,14 @@ class ClipboardPanel: NSPanel {
 
         orderFrontRegardless()                           // 强制显示在最前
         makeKeyAndOrderFront(nil)                        // 成为 key window
-        NSApp.activate(ignoringOtherApps: true)          // 激活应用
 
-        setupEventMonitors()                             // 开始监听鼠标事件
+        // 延迟激活应用，让淡入动画先开始，避免激活瞬间的窗口重排导致闪烁
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+
+        setupEventMonitors()  // 开始监听鼠标事件
+        lastClickTime = Date().timeIntervalSince1970  // 记录显示时间戳
 
         // 淡入动画
         NSAnimationContext.runAnimationGroup { context in
@@ -178,15 +182,26 @@ class ClipboardPanel: NSPanel {
     /// 隐藏面板（带淡出动画）
     /// - Parameter restorePreviousApp: 是否恢复之前的活跃应用，打开设置窗口时为 false
     func hide(restorePreviousApp: Bool = true) {
+        // 防止重复触发隐藏动画
+        if isHiding { return }
+        isHiding = true
+
         removeEventMonitors()  // 停止监听鼠标事件
+
+        // 在动画开始前捕获 previousApp，避免 completionHandler 中 self.previousApp 已过期
+        let appToRestore = restorePreviousApp ? previousApp : nil
         // 淡出动画
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.12
+            context.duration = 0.08  // 缩短淡出时长，减少用户等待感
             animator().alphaValue = 0.0
         } completionHandler: {
+            self.isHiding = false
             self.orderOut(nil)
-            if restorePreviousApp {
-                self.previousApp?.activate()  // 恢复到之前的应用
+            // 恢复到之前的应用（如果 CodeClip 当前是前台应用，说明用户未主动切换）
+            // 只有 CodeClip 自身是前台时才切回 previousApp，避免与用户主动切换冲突
+            if let app = appToRestore,
+               NSWorkspace.shared.frontmostApplication?.bundleIdentifier == Bundle.main.bundleIdentifier {
+                app.activate()
             }
         }
     }

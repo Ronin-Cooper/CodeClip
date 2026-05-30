@@ -24,6 +24,7 @@ class ClipboardManager: ObservableObject {
     private var autoClearTimer: Timer?         // 自动清除定时器
     private var lastChangeCount: Int = 0       // 上次检测到的 changeCount，用于判断是否有新内容
     private var ignoreNextChange = false       // 标记位：跳过下一次剪贴板变化（用于程序内部粘贴）
+    private var lastMaxItems: Int = SettingsManager.shared.maxItems  // 追踪 maxItems，仅在变化时裁剪
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
@@ -31,11 +32,17 @@ class ClipboardManager: ObservableObject {
         startMonitoring()
         startAutoClear()
 
-        // 监听设置变化，动态调整历史记录上限
+        // 监听设置变化，仅在 maxItems 实际变化时裁剪历史记录
+        // 快捷键、外观等无关设置变更不会触发裁剪
         SettingsManager.shared.objectWillChange
             .sink { [weak self] _ in
                 DispatchQueue.main.async {
-                    self?.trimHistory()
+                    guard let self = self else { return }
+                    let currentMax = SettingsManager.shared.maxItems
+                    if self.lastMaxItems != currentMax {
+                        self.lastMaxItems = currentMax
+                        self.trimHistory()
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -48,9 +55,10 @@ class ClipboardManager: ObservableObject {
 
     // MARK: - 定时器管理
 
-    /// 启动剪贴板轮询定时器（每 0.1 秒检查一次）
+    /// 启动剪贴板轮询定时器（每 0.5 秒检查一次）
+    /// 频率过高会导致 CPU 占用增加，0.5s 对剪贴板场景足够灵敏
     private func startMonitoring() {
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.checkForChanges()
         }
         RunLoop.main.add(timer!, forMode: .common)
@@ -105,26 +113,32 @@ class ClipboardManager: ObservableObject {
         }
 
         let types = pasteboard.types ?? []
-        print("[ClipboardManager] changeCount=\(changeCount), types=\(types)")
 
         var newContent: ClipboardContent?
 
         // 优先读取文本内容
         if types.contains(.string), let string = pasteboard.string(forType: .string) {
-            print("[ClipboardManager] read string: \(string.prefix(50))")
             newContent = .text(string)
         }
-        // 其次读取图片内容（通过 TIFF 数据创建 NSImage，避免 NSSecureCoding 警告）
-        else if types.contains(.tiff),
-                  let data = pasteboard.data(forType: .tiff),
-                  let image = NSImage(data: data) {
-            newContent = .image(image)
+        // 其次读取图片内容：在多个常见图片格式中尝试读取
+        else {
+            // macOS 剪贴板中常见的图片 UTI 类型，按优先级排序
+            let imageTypes: [NSPasteboard.PasteboardType] = [
+                .tiff,                          // TIFF
+                NSPasteboard.PasteboardType("public.png"),   // PNG
+                NSPasteboard.PasteboardType("public.jpeg"),  // JPEG
+                NSPasteboard.PasteboardType("com.compuserve.gif"),  // GIF
+            ]
+            for imageType in imageTypes where types.contains(imageType) {
+                if let data = pasteboard.data(forType: imageType),
+                   let image = NSImage(data: data) {
+                    newContent = .image(image)
+                    break
+                }
+            }
         }
 
-        guard let content = newContent else {
-            print("[ClipboardManager] no supported content found")
-            return
-        }
+        guard let content = newContent else { return }
 
         // 去重：如果与最新一条内容相同则跳过（避免重新粘贴时产生重复记录）
         if let last = history.first, last.content == content {
@@ -136,7 +150,6 @@ class ClipboardManager: ObservableObject {
         sortHistory()
         trimHistory()
 
-        print("[ClipboardManager] added item, total=\(history.count)")
         NotificationCenter.default.post(name: Self.historyDidChangeNotification, object: nil)
     }
 
