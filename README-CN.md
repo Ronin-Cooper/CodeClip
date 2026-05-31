@@ -140,11 +140,6 @@ chore: 构建/工具
 - 灵感来源于 [Maccy](https://github.com/p0deje/Maccy) 和 [Paste](https://pasteapp.io/)
 - 使用 [SwiftUI](https://developer.apple.com/xcode/swiftui/) 构建
 
-## 📧 联系方式
-
-- 作者: cooper
-- 邮箱: cooper.hy.zhang@outlook.com
-
 ---
 
 **CodeClip** - 让剪贴板管理更简单 🎉
