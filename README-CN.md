@@ -41,7 +41,7 @@ open CodeClip.xcodeproj
 
 ### 方式二：下载预编译版本
 
-前往 [Releases](https://git.learny.dpdns.org/cooper/CodeClip/releases) 页面下载最新版本。
+前往 [Releases](https://github.com/Ronin-Cooper/CodeClip/releases) 页面下载最新版本。
 
 ## ⚙️ 系统要求
 

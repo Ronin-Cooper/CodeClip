@@ -41,7 +41,7 @@ open CodeClip.xcodeproj
 
 ### Option 2: Download Pre-built Release
 
-Visit the [Releases](https://git.learny.dpdns.org/cooper/CodeClip/releases) page to download the latest version.
+Visit the [Releases](https://github.com/Ronin-Cooper/CodeClip/releases) page to download the latest version.
 
 ## ⚙️ System Requirements
 
