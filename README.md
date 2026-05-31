@@ -4,145 +4,142 @@
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange.svg)](https://swift.org/)
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-CodeClip 是一款轻量级的 macOS 剪贴板历史管理器，常驻菜单栏，帮助你轻松管理和复用复制过的内容。
+English | [中文](./README-CN.md)
 
-## ✨ 功能特性
+CodeClip is a lightweight macOS clipboard history manager that lives in the menu bar, helping you easily manage and reuse copied content.
 
-- **📋 剪贴板历史记录** - 自动记录复制的文本和图片，最多保存 500 条
-- **⌨️ 全局快捷键** - 使用 `⌘+⇧+V` 快速呼出历史面板（可自定义）
-- **📌 固定常用项** - 将重要内容固定在顶部，不会被自动清理
-- **🎨 毛玻璃界面** - 采用 macOS 原生毛玻璃效果，美观流畅
-- **⚡ 快速粘贴** - 点击历史项即可快速粘贴到任意应用
-- **🔒 隐私保护** - 本地存储，不上传任何数据
-- **🚀 开机自启** - 支持开机自动启动
-- **🎯 灵活定位** - 支持屏幕居中、跟随光标、屏幕顶部三种定位方式
-- **🧹 自动清理** - 可设置自动清理过期记录（1天/7天/30天）
+## ✨ Features
 
-## 📸 截图
+- **📋 Clipboard History** - Automatically records copied text and images, up to 500 items
+- **⌨️ Global Hotkey** - Quickly summon the history panel with `⌘+⇧+V` (customizable)
+- **📌 Pin Favorites** - Pin important items to the top so they won't be auto-cleaned
+- **🎨 Frosted Glass UI** - Beautiful and smooth with native macOS frosted glass effects
+- **⚡ Quick Paste** - Click any history item to quickly paste into any app
+- **🔒 Privacy First** - All data stored locally, nothing is ever uploaded
+- **🚀 Launch at Login** - Supports automatic startup on login
+- **🎯 Flexible Positioning** - Three position options: centered, follow cursor, or top of screen
+- **🧹 Auto Cleanup** - Configurable auto-cleanup for expired records (1 day / 7 days / 30 days)
+
+## 📸 Screenshot
 
 ![CodeClip Screenshot](doc/screenshot.png)
 
-## 🚀 安装
+## 🚀 Installation
 
-### 方式一：从源码构建
+### Option 1: Build from Source
 
 ```bash
-# 克隆仓库
+# Clone the repository
 git clone https://git.learny.dpdns.org/cooper/CodeClip.git
 cd CodeClip
 
-# 使用 Xcode 打开项目
+# Open the project with Xcode
 open CodeClip.xcodeproj
 
-# 在 Xcode 中按 Cmd+R 运行
+# Press Cmd+R in Xcode to run
 ```
 
-### 方式二：下载预编译版本
+### Option 2: Download Pre-built Release
 
-前往 [Releases](https://git.learny.dpdns.org/cooper/CodeClip/releases) 页面下载最新版本。
+Visit the [Releases](https://git.learny.dpdns.org/cooper/CodeClip/releases) page to download the latest version.
 
-## ⚙️ 系统要求
+## ⚙️ System Requirements
 
-- macOS 13.0 (Ventura) 或更高版本
-- Apple Silicon (arm64) 或 Intel (x86_64)
+- macOS 13.0 (Ventura) or later
+- Apple Silicon (arm64) or Intel (x86_64)
 
-## 🔐 权限说明
+## 🔐 Permissions
 
-首次运行时需要授予以下权限：
+The following permissions are required on first run:
 
-1. **辅助功能权限**（必需）
-   - 系统设置 → 隐私与安全性 → 辅助功能 → 添加 CodeClip
-   - 用于监听全局快捷键和模拟粘贴操作
+1. **Accessibility** (Required)
+   - System Settings → Privacy & Security → Accessibility → Add CodeClip
+   - Used for listening to global hotkeys and simulating paste operations
 
-2. **剪贴板访问权限**（自动请求）
-   - 用于读取和写入剪贴板内容
+2. **Clipboard Access** (Requested automatically)
+   - Used for reading and writing clipboard content
 
-## 📖 使用说明
+## 📖 Usage
 
-### 基本操作
+### Basic Operations
 
-1. **复制内容** - 像平常一样使用 `⌘+C` 复制
-2. **呼出面板** - 按下 `⌘+⇧+V` 或点击菜单栏图标
-3. **粘贴历史** - 点击任意历史项即可粘贴
-4. **固定内容** - 悬停时点击图钉图标
-5. **删除记录** - 悬停时点击垃圾桶图标
+1. **Copy Content** - Use `⌘+C` to copy as usual
+2. **Open Panel** - Press `⌘+⇧+V` or click the menu bar icon
+3. **Paste History** - Click any history item to paste
+4. **Pin Content** - Click the pin icon on hover
+5. **Delete Record** - Click the trash icon on hover
 
-### 设置
+### Settings
 
-点击菜单栏图标 → 设置，或按 `⌘+,` 打开设置面板：
+Click the menu bar icon → Settings, or press `⌘+,` to open the settings panel:
 
-- **通用** - 开机自启动
-- **快捷键** - 自定义呼出快捷键
-- **历史记录** - 设置最大记录数和自动清理时间
-- **外观** - 设置面板显示位置
+- **General** - Launch at login
+- **Hotkeys** - Customize the summon hotkey
+- **History** - Set max records and auto-cleanup interval
+- **Appearance** - Set the panel position
 
-## 🛠 技术栈
+## 🛠 Tech Stack
 
-- **语言**: Swift 5.9
-- **框架**: SwiftUI + AppKit
-- **最低支持**: macOS 13.0
-- **架构**: Apple Silicon (arm64)
+- **Language**: Swift 5.9
+- **Framework**: SwiftUI + AppKit
+- **Minimum Support**: macOS 13.0
+- **Architecture**: Apple Silicon (arm64)
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 CodeClip/
-├── CodeClipApp.swift           # 应用入口
+├── CodeClipApp.swift           # App entry point
 ├── Models/
-│   ├── ClipboardItem.swift     # 剪贴板项模型
-│   └── SettingsKey.swift       # 设置项定义
+│   ├── ClipboardItem.swift     # Clipboard item model
+│   └── SettingsKey.swift       # Settings key definitions
 ├── Services/
-│   ├── ClipboardManager.swift  # 剪贴板管理器
-│   ├── HotKeyManager.swift     # 快捷键管理器
-│   ├── PasteSimulator.swift    # 粘贴模拟器
-│   └── SettingsManager.swift   # 设置管理器
+│   ├── ClipboardManager.swift  # Clipboard manager
+│   ├── HotKeyManager.swift     # Hotkey manager
+│   ├── PasteSimulator.swift    # Paste simulator
+│   └── SettingsManager.swift   # Settings manager
 ├── UI/
-│   ├── ClipboardPanel.swift    # 主面板窗口
-│   ├── ClipboardHistoryView.swift  # 历史列表视图
-│   └── Settings/               # 设置界面
+│   ├── ClipboardPanel.swift    # Main panel window
+│   ├── ClipboardHistoryView.swift  # History list view
+│   └── Settings/               # Settings UI
 │       ├── SettingsWindow.swift
 │       ├── SettingsView.swift
 │       └── Panes/
-└── Assets.xcassets/            # 资源文件
+└── Assets.xcassets/            # Asset files
 ```
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-### 开发环境
+### Development Setup
 
-1. 安装 Xcode 15.0 或更高版本
-2. 克隆仓库
-3. 打开 `CodeClip.xcodeproj`
-4. 按 `Cmd+R` 运行
+1. Install Xcode 15.0 or later
+2. Clone the repository
+3. Open `CodeClip.xcodeproj`
+4. Press `Cmd+R` to run
 
-### 提交规范
+### Commit Convention
 
 ```
-feat: 新功能
-fix: 修复 bug
-docs: 文档更新
-style: 代码格式
-refactor: 重构
-test: 测试
-chore: 构建/工具
+feat: New feature
+fix: Bug fix
+docs: Documentation update
+style: Code formatting
+refactor: Refactoring
+test: Tests
+chore: Build/tooling
 ```
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 GPLv3 许可证 - 详见 [LICENSE](LICENSE) 文件
+This project is licensed under GPLv3 - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 致谢
+## 🙏 Acknowledgements
 
-- 灵感来源于 [Maccy](https://github.com/p0deje/Maccy) 和 [Paste](https://pasteapp.io/)
-- 使用 [SwiftUI](https://developer.apple.com/xcode/swiftui/) 构建
-
-## 📧 联系方式
-
-- 作者: cooper
-- 邮箱: cooper.hy.zhang@outlook.com
+- Inspired by [Maccy](https://github.com/p0deje/Maccy) and [Paste](https://pasteapp.io/)
+- Built with [SwiftUI](https://developer.apple.com/xcode/swiftui/)
 
 ---
 
-**CodeClip** - 让剪贴板管理更简单 🎉
+**CodeClip** - Making clipboard management simple 🎉
