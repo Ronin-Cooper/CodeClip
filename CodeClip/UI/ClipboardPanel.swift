@@ -1,5 +1,13 @@
 import AppKit
+import Combine
 import SwiftUI
+
+// MARK: - 面板键盘选择状态
+
+/// 在 AppKit（键盘事件）和 SwiftUI（视图渲染）之间同步选中索引
+class ClipboardPanelState: ObservableObject {
+    @Published var selectedIndex: Int = 0
+}
 
 /// 剪贴板历史浮动面板
 ///
@@ -22,6 +30,12 @@ class ClipboardPanel: NSPanel {
     private var globalMonitor: Any?        // 全局鼠标事件监听（面板外点击关闭）
     private var lastClickTime: TimeInterval = 0  // 最近一次内部交互时间戳
     private var isHiding = false           // 标记是否正在执行隐藏动画，防止重复调用
+
+    /// 最近一次面板内交互的时间（系统运行时间，用于全局点击闭包容差判断）
+    private var lastInteractionUptime: TimeInterval = ProcessInfo.processInfo.systemUptime
+
+    /// 键盘选择状态（上下选择、回车粘贴）
+    let panelState = ClipboardPanelState()
 
     // MARK: - 初始化
 
@@ -102,7 +116,7 @@ class ClipboardPanel: NSPanel {
             }
 
             // 时间戳检测：如果此前有面板内的交互（按钮点击等），视为同一次操作，跳过关闭
-            let timeDiff = abs(event.timestamp - self.lastClickTime)
+            let timeDiff = abs(event.timestamp - self.lastInteractionUptime)
             if timeDiff < 0.3 { // 300ms 容差，覆盖 View 重建和动画延迟
                 return
             }
@@ -117,7 +131,7 @@ class ClipboardPanel: NSPanel {
             NSEvent.removeMonitor(monitor)
             globalMonitor = nil
         }
-        lastClickTime = 0
+        lastInteractionUptime = ProcessInfo.processInfo.systemUptime
     }
 
     // MARK: - 视图构建
@@ -125,17 +139,21 @@ class ClipboardPanel: NSPanel {
     /// 创建剪贴板历史的 SwiftUI 视图
     private func makeSwiftUIView() -> ClipboardHistoryView {
         ClipboardHistoryView(
+            panelState: panelState,
             items: ClipboardManager.shared.history,
             onPaste: { index in
                 self.pasteItem(at: index)
             },
             onPin: { id in
+                self.lastInteractionUptime = ProcessInfo.processInfo.systemUptime
                 ClipboardManager.shared.togglePin(id: id)
             },
             onDelete: { id in
+                self.lastInteractionUptime = ProcessInfo.processInfo.systemUptime
                 ClipboardManager.shared.deleteItem(with: id)
             },
             onClearAll: {
+                self.lastInteractionUptime = ProcessInfo.processInfo.systemUptime
                 ClipboardManager.shared.clearAll()
             }
         )
@@ -152,6 +170,7 @@ class ClipboardPanel: NSPanel {
         }
 
         previousApp = NSWorkspace.shared.frontmostApplication  // 记住当前活跃应用
+        panelState.selectedIndex = 0                            // 默认选中第一条
         positionPanel()                                         // 根据设置定位面板
         alphaValue = 0                                          // 初始透明
 
@@ -170,7 +189,7 @@ class ClipboardPanel: NSPanel {
         }
 
         setupEventMonitors()  // 开始监听鼠标事件
-        lastClickTime = Date().timeIntervalSince1970  // 记录显示时间戳
+        lastInteractionUptime = ProcessInfo.processInfo.systemUptime  // 记录面板内交互时间戳
 
         // 淡入动画
         NSAnimationContext.runAnimationGroup { context in
@@ -218,6 +237,26 @@ class ClipboardPanel: NSPanel {
     /// ESC 键关闭面板
     override func cancelOperation(_ sender: Any?) {
         hide()
+    }
+
+    /// 方向键上下选择、回车键粘贴
+    override func keyDown(with event: NSEvent) {
+        let items = ClipboardManager.shared.history
+        guard !items.isEmpty else {
+            super.keyDown(with: event)
+            return
+        }
+
+        switch event.keyCode {
+        case 126: // 上箭头
+            panelState.selectedIndex = max(0, panelState.selectedIndex - 1)
+        case 125: // 下箭头
+            panelState.selectedIndex = min(items.count - 1, panelState.selectedIndex + 1)
+        case 36:  // 回车键
+            pasteItem(at: panelState.selectedIndex)
+        default:
+            super.keyDown(with: event)
+        }
     }
 
     // MARK: - 面板定位
@@ -294,6 +333,7 @@ class ClipboardPanel: NSPanel {
     /// 剪贴板变化时刷新视图
     @objc private func clipboardDidChange() {
         guard isVisible else { return }
+        panelState.selectedIndex = 0  // 重置选中到最新项
         hostingView?.rootView = makeSwiftUIView()
     }
 

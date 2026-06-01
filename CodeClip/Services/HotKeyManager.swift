@@ -100,7 +100,7 @@ class HotKeyManager {
                         return nil  // 消费事件，防止传递给其他应用
                     }
                 }
-                return Unmanaged.passRetained(event)  // 非快捷键事件正常传递
+                return Unmanaged.passUnretained(event)  // 非快捷键事件正常传递
             },
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {

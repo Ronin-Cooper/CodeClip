@@ -4,6 +4,7 @@ import SwiftUI
 // 剪贴板历史记录列表视图，显示在浮动面板中
 
 struct ClipboardHistoryView: View {
+    @ObservedObject var panelState: ClipboardPanelState  // 键盘选择状态
     let items: [ClipboardItem]          // 历史记录列表
     let onPaste: (Int) -> Void          // 粘贴回调（传入索引）
     let onPin: (UUID) -> Void           // 固定/取消固定回调
@@ -42,29 +43,41 @@ struct ClipboardHistoryView: View {
                 if items.isEmpty {
                     EmptyStateView()
                 } else {
-                    ScrollView(showsIndicators: false) {
-                        LazyVStack(spacing: 4) {
-                            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                                ClipboardRowView(
-                                    item: item,
-                                    index: index,
-                                    isHovered: hoveredIndex == index,
-                                    onHover: { isHovering in
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                            hoveredIndex = isHovering ? index : nil
-                                        }
-                                    },
-                                    onPaste: { onPaste(index) },
-                                    onPin: { onPin(item.id) },
-                                    onDelete: { onDelete(item.id) }
-                                )
-                                .id(item.id)
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
+                            LazyVStack(spacing: 4) {
+                                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                                    ClipboardRowView(
+                                        item: item,
+                                        index: index,
+                                        isHovered: hoveredIndex == index,
+                                        isSelected: panelState.selectedIndex == index,
+                                        onHover: { isHovering in
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                hoveredIndex = isHovering ? index : nil
+                                            }
+                                        },
+                                        onPaste: {
+                                            panelState.selectedIndex = index
+                                            onPaste(index)
+                                        },
+                                        onPin: { onPin(item.id) },
+                                        onDelete: { onDelete(item.id) }
+                                    )
+                                    .id(item.id)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                        }
+                        .frame(maxHeight: panelMaxHeight - 88)
+                        .onChange(of: panelState.selectedIndex) { _, newIndex in
+                            guard newIndex >= 0, newIndex < items.count else { return }
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                                proxy.scrollTo(items[newIndex].id, anchor: .center)
                             }
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
                     }
-                    .frame(maxHeight: panelMaxHeight - 88)
                 }
 
                 Divider()
@@ -150,6 +163,7 @@ private struct ClipboardRowView: View {
     let item: ClipboardItem
     let index: Int
     let isHovered: Bool
+    let isSelected: Bool
     let onHover: (Bool) -> Void
     let onPaste: () -> Void
     let onPin: () -> Void
@@ -233,7 +247,22 @@ private struct ClipboardRowView: View {
         .frame(height: rowHeight)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isHovered ? Color.primary.opacity(0.06) : Color.clear)
+                .fill(
+                    isHovered
+                        ? Color.primary.opacity(0.06)
+                        : isSelected
+                            ? Color.accentColor.opacity(0.15)
+                            : Color.clear
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(
+                            isSelected && !isHovered
+                                ? Color.accentColor.opacity(0.3)
+                                : Color.clear,
+                            lineWidth: 1
+                        )
+                )
         )
         .contentShape(RoundedRectangle(cornerRadius: 6))
         .onTapGesture {
@@ -370,6 +399,7 @@ struct VisualEffectView: NSViewRepresentable {
 struct ClipboardHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         ClipboardHistoryView(
+            panelState: ClipboardPanelState(),
             items: [
                 ClipboardItem(
                     content: .text("Hello World! This is a sample clipboard item that demonstrates the preview text truncation behavior."),

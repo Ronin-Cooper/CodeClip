@@ -29,7 +29,7 @@ enum PanelPosition: String, CaseIterable, Identifiable {
     case followCursor = "followCursor"
     case top = "top"
     case rightBottom = "rightBottom"
-    case leftBottom = "center"
+    case leftBottom = "leftBottom"
 
     var id: String { rawValue }
 

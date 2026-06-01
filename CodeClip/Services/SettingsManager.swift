@@ -131,7 +131,15 @@ class SettingsManager: ObservableObject {
         _hotKeyKeyCode = d.object(forKey: SettingsKey.hotKeyKeyCode) as? Int ?? SettingsKey.defaultKeyCode
         _maxItemsOption = MaxItemsOption(rawValue: d.object(forKey: SettingsKey.maxItems) as? Int ?? MaxItemsOption.oneHundred.rawValue) ?? .oneHundred
         _autoClearOption = AutoClearOption(rawValue: d.object(forKey: SettingsKey.autoClearDays) as? Int ?? AutoClearOption.never.rawValue) ?? .never
-        _panelPosition = PanelPosition(rawValue: d.string(forKey: SettingsKey.panelPosition) ?? PanelPosition.followCursor.rawValue) ?? .followCursor
+
+        // 迁移：旧版本 leftBottom 存储为 "center"，新版本改为 "leftBottom"
+        let rawPosition = d.string(forKey: SettingsKey.panelPosition)
+        if rawPosition == "center" {
+            _panelPosition = .leftBottom
+            d.set(PanelPosition.leftBottom.rawValue, forKey: SettingsKey.panelPosition)
+        } else {
+            _panelPosition = PanelPosition(rawValue: rawPosition ?? PanelPosition.followCursor.rawValue) ?? .followCursor
+        }
         _appTheme = AppTheme(rawValue: d.string(forKey: SettingsKey.appTheme) ?? AppTheme.system.rawValue) ?? .system
 
         // 启动时应用主题设置

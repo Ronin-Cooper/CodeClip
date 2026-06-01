@@ -14,8 +14,10 @@ struct CodeClipApp: App {
         let bundleId = Bundle.main.bundleIdentifier ?? ""
         let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId)
         if runningApps.count > 1 {
-            // 已有实例在运行，退出当前实例
-            NSApp.terminate(nil)
+            // 延迟到下一个 RunLoop 退出，让 body 先完成构造（避免 SceneBuilder 条件分支兼容性问题）
+            DispatchQueue.main.async {
+                NSApp.terminate(nil)
+            }
             return
         }
 
