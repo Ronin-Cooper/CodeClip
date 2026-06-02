@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import AppKit
+import SwiftUI
 
 /// 设置管理器 - 统一管理所有应用设置的读写和持久化
 ///
@@ -95,7 +96,7 @@ class SettingsManager: ObservableObject {
     // 默认跟随光标
     private var _panelPosition: PanelPosition = .followCursor
 
-    /// 应用主题（浅色/深色/跟随系统）
+    /// 应用主题（浅色/深色/跟随系统/自定义）
     var appTheme: AppTheme {
         get { _appTheme }
         set {
@@ -107,6 +108,23 @@ class SettingsManager: ObservableObject {
         }
     }
     private var _appTheme: AppTheme = .system
+
+    /// 自定义主题颜色（仅在 appTheme == .custom 时使用）
+    var customThemeColors: CustomThemeColors {
+        get { _customThemeColors }
+        set {
+            guard _customThemeColors != newValue else { return }
+            _customThemeColors = newValue
+            if let data = try? JSONEncoder().encode(newValue) {
+                defaults.set(data, forKey: SettingsKey.customThemeColors)
+            }
+            if _appTheme == .custom {
+                applyTheme()
+            }
+            notifyChange()
+        }
+    }
+    private var _customThemeColors: CustomThemeColors = .default
 
     // MARK: - Computed Properties（计算属性）
 
@@ -141,6 +159,12 @@ class SettingsManager: ObservableObject {
             _panelPosition = PanelPosition(rawValue: rawPosition ?? PanelPosition.followCursor.rawValue) ?? .followCursor
         }
         _appTheme = AppTheme(rawValue: d.string(forKey: SettingsKey.appTheme) ?? AppTheme.system.rawValue) ?? .system
+
+        // 加载自定义主题颜色
+        if let data = d.data(forKey: SettingsKey.customThemeColors),
+           let decoded = try? JSONDecoder().decode(CustomThemeColors.self, from: data) {
+            _customThemeColors = decoded
+        }
 
         // 启动时应用主题设置
         applyTheme()
@@ -219,7 +243,49 @@ class SettingsManager: ObservableObject {
                 NSApp.appearance = NSAppearance(named: .aqua)
             case .dark:
                 NSApp.appearance = NSAppearance(named: .darkAqua)
+            case .custom:
+                let hex = self._customThemeColors.backgroundColor
+                let cleaned = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+                let luminance: CGFloat
+                if cleaned.count == 6, let int = UInt64(cleaned, radix: 16) {
+                    let r = CGFloat((int >> 16) & 0xFF) / 255.0
+                    let g = CGFloat((int >> 8)  & 0xFF) / 255.0
+                    let b = CGFloat(int         & 0xFF) / 255.0
+                    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+                } else {
+                    luminance = 0.12  // fallback 暗色
+                }
+                NSApp.appearance = luminance < 0.5
+                    ? NSAppearance(named: .darkAqua)
+                    : NSAppearance(named: .aqua)
             }
         }
+    }
+
+    // MARK: - Theme Color Resolvers（主题颜色解析器）
+
+    /// 主要文字色（自定义模式下返回用户设置的颜色）
+    var theme_textColor: Color {
+        _appTheme == .custom ? _customThemeColors.primaryColor : .primary
+    }
+
+    /// 次要文字色
+    var theme_secondaryTextColor: Color {
+        _appTheme == .custom ? _customThemeColors.secondaryColor : .secondary
+    }
+
+    /// 强调色
+    var theme_accentColor: Color {
+        _appTheme == .custom ? _customThemeColors.accent : .accentColor
+    }
+
+    /// 面板背景色（自定义模式下返回纯色，否则返回 .clear 由 VisualEffectView 提供）
+    var theme_backgroundColor: Color {
+        _appTheme == .custom ? _customThemeColors.bgColor : .clear
+    }
+
+    /// 是否正在使用自定义主题（用于 VisualEffectView ↔ 纯色背景切换）
+    var theme_isCustom: Bool {
+        _appTheme == .custom
     }
 }

@@ -5,6 +5,7 @@ import SwiftUI
 
 struct ClipboardHistoryView: View {
     @ObservedObject var panelState: ClipboardPanelState  // 键盘选择状态
+    @ObservedObject private var settings = SettingsManager.shared  // 主题设置
     let items: [ClipboardItem]          // 历史记录列表
     let onPaste: (Int) -> Void          // 粘贴回调（传入索引）
     let onPin: (UUID) -> Void           // 固定/取消固定回调
@@ -20,15 +21,23 @@ struct ClipboardHistoryView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            // Background
-            VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
-                .cornerRadius(cornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                )
-                .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: 8)
-                .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+            // Background — 自定义主题使用纯色，否则用毛玻璃
+            Group {
+                if settings.theme_isCustom {
+                    settings.theme_backgroundColor
+                } else {
+                    VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
+                }
+            }
+            .cornerRadius(cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(settings.theme_isCustom
+                            ? settings.theme_secondaryTextColor.opacity(0.12)
+                            : Color.white.opacity(0.12), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.25), radius: 20, x: 0, y: 8)
+            .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
 
             VStack(spacing: 0) {
                 // Header
@@ -99,13 +108,14 @@ struct ClipboardHistoryView: View {
 // 面板头部：标题 + 设置按钮 + 关闭按钮
 
 private struct HeaderView: View {
+    @ObservedObject private var settings = SettingsManager.shared
     let onClose: () -> Void
 
     var body: some View {
         HStack {
             Text("剪贴板历史记录")
                 .font(.headline)
-                .foregroundColor(.primary)
+                .foregroundColor(settings.theme_textColor)
 
             Spacer()
 
@@ -116,9 +126,9 @@ private struct HeaderView: View {
             }) {
                 Image(systemName: "gearshape")
                     .font(.system(size: 13))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(settings.theme_secondaryTextColor)
                     .frame(width: 28, height: 28)
-                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+                    .background(settings.theme_secondaryTextColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
 
@@ -126,9 +136,9 @@ private struct HeaderView: View {
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(settings.theme_secondaryTextColor)
                     .frame(width: 28, height: 28)
-                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+                    .background(settings.theme_secondaryTextColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
         }
@@ -140,17 +150,19 @@ private struct HeaderView: View {
 // MARK: - Empty State View
 
 private struct EmptyStateView: View {
+    @ObservedObject private var settings = SettingsManager.shared
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "doc.on.clipboard")
                 .font(.system(size: 32))
-                .foregroundColor(.secondary)
+                .foregroundColor(settings.theme_secondaryTextColor)
             Text("暂无剪贴板记录")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(settings.theme_secondaryTextColor)
             Text("复制文本或图片后将自动显示在这里")
                 .font(.caption)
-                .foregroundColor(.secondary.opacity(0.7))
+                .foregroundColor(settings.theme_secondaryTextColor.opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -160,6 +172,7 @@ private struct EmptyStateView: View {
 // 单条剪贴板记录行视图：显示类型图标、内容预览、复制时间、操作按钮
 
 private struct ClipboardRowView: View {
+    @ObservedObject private var settings = SettingsManager.shared
     let item: ClipboardItem
     let index: Int
     let isHovered: Bool
@@ -180,7 +193,7 @@ private struct ClipboardRowView: View {
                     // Type icon
                     ZStack {
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(typeIconColor)
+                            .fill(settings.theme_accentColor)
                             .frame(width: 32, height: 32)
                         Image(systemName: typeIcon)
                             .font(.system(size: 14, weight: .medium))
@@ -192,12 +205,12 @@ private struct ClipboardRowView: View {
                         Text(contentPreview)
                             .font(.system(size: 13, design: .monospaced))
                             .lineLimit(2)
-                            .foregroundColor(.primary)
+                            .foregroundColor(settings.theme_textColor)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                         Text(timeAgo)
                             .font(.caption2)
-                            .foregroundColor(.secondary.opacity(0.7))
+                            .foregroundColor(settings.theme_secondaryTextColor.opacity(0.7))
                     }
                 }
                 .padding(.leading, 10)
@@ -235,7 +248,7 @@ private struct ClipboardRowView: View {
                     ActionButton(
                         icon: item.isPinned ? "pin.fill" : "pin",
                         tooltip: item.isPinned ? "取消固定" : "固定",
-                        color: item.isPinned ? .blue : .secondary
+                        color: item.isPinned ? settings.theme_accentColor : settings.theme_secondaryTextColor
                     ) { onPin() }
                 }
                 if showActions {
@@ -249,16 +262,16 @@ private struct ClipboardRowView: View {
             RoundedRectangle(cornerRadius: 6)
                 .fill(
                     isHovered
-                        ? Color.primary.opacity(0.06)
+                        ? settings.theme_textColor.opacity(0.06)
                         : isSelected
-                            ? Color.accentColor.opacity(0.15)
+                            ? settings.theme_accentColor.opacity(0.15)
                             : Color.clear
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
                         .strokeBorder(
                             isSelected && !isHovered
-                                ? Color.accentColor.opacity(0.3)
+                                ? settings.theme_accentColor.opacity(0.3)
                                 : Color.clear,
                             lineWidth: 1
                         )
@@ -292,14 +305,6 @@ private struct ClipboardRowView: View {
         }
     }
 
-    /// 根据内容类型返回图标背景色
-    private var typeIconColor: Color {
-        switch item.content {
-        case .text: return .blue
-        case .image: return .orange
-        }
-    }
-
     /// 内容预览文本
     private var contentPreview: String {
         switch item.content {
@@ -321,6 +326,7 @@ private struct ClipboardRowView: View {
 // MARK: - Action Button
 
 private struct ActionButton: View {
+    @ObservedObject private var settings = SettingsManager.shared
     let icon: String
     let tooltip: String
     var color: Color = .secondary
@@ -330,12 +336,12 @@ private struct ActionButton: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(color == .red ? .red : .secondary)
+                .foregroundColor(color == .red ? .red : settings.theme_secondaryTextColor)
                 .frame(width: 24, height: 24)
                 .background(
                     color == .red
                         ? Color.red.opacity(0.1)
-                        : Color.secondary.opacity(0.1),
+                        : settings.theme_secondaryTextColor.opacity(0.1),
                     in: RoundedRectangle(cornerRadius: 4)
                 )
         }
@@ -347,6 +353,7 @@ private struct ActionButton: View {
 // MARK: - Footer View
 
 private struct FooterView: View {
+    @ObservedObject private var settings = SettingsManager.shared
     let onClearAll: () -> Void
 
     var body: some View {
@@ -366,7 +373,7 @@ private struct FooterView: View {
             if count > 0 {
                 Text("共 \(count) 项")
                     .font(.caption2)
-                    .foregroundColor(.secondary.opacity(0.6))
+                    .foregroundColor(settings.theme_secondaryTextColor.opacity(0.6))
                     .padding(.trailing, 16)
             }
         }

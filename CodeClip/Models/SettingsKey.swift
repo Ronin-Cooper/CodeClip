@@ -19,6 +19,7 @@ enum SettingsKey {
     // 外观设置
     static let panelPosition = "panelPosition"           // 面板显示位置
     static let appTheme = "appTheme"                     // 应用主题
+    static let customThemeColors = "customThemeColors"   // 自定义主题颜色
 }
 
 // MARK: - Enums
@@ -39,6 +40,34 @@ enum PanelPosition: String, CaseIterable, Identifiable {
         case .top: return "屏幕顶部"
         case .rightBottom: return"右侧底部"
         case .leftBottom: return "左侧底部"
+        }
+    }
+}
+
+/// 应用主题
+enum AppTheme: String, CaseIterable, Identifiable {
+    case system = "system"
+    case light = "light"
+    case dark = "dark"
+    case custom = "custom"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .system: return "跟随系统"
+        case .light: return "浅色"
+        case .dark: return "深色"
+        case .custom: return "自定义"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .system: return "desktopcomputer"
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        case .custom: return "paintpalette"
         }
     }
 }
@@ -81,31 +110,6 @@ enum AutoClearOption: Int, CaseIterable, Identifiable {
         case .oneDay: return 86_400
         case .sevenDays: return 604_800
         case .thirtyDays: return 2_592_000
-        }
-    }
-}
-
-/// 应用主题
-enum AppTheme: String, CaseIterable, Identifiable {
-    case system = "system"
-    case light = "light"
-    case dark = "dark"
-
-    var id: String { rawValue }
-
-    var displayName: String {
-        switch self {
-        case .system: return "跟随系统"
-        case .light: return "浅色"
-        case .dark: return "深色"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .system: return "desktopcomputer"
-        case .light: return "sun.max"
-        case .dark: return "moon"
         }
     }
 }
